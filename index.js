@@ -157,6 +157,11 @@ client.on('connect', function () { // When connected
             queue2.write('TREEXML ' + parts[2] + '\n');
             break;
 
+          // Get updates from all groups
+          case "discovery":
+            discoverySent = [];
+            queue2.write('GET //' + settings.cbusname + '/' + parts[2] + '/' + parts[3] + '/* level\n');
+            break;
 
           // Get updates from all groups
           case "getall":

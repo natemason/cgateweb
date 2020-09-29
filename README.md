@@ -60,3 +60,48 @@ Requesting an update on start or periodic updates can be set in the settings fil
 ### Other notes:
 I made this for working with OpenHAB
 It assumes the default cgate ports
+
+---
+## Home Assistant extensions
+
+### Home Assistant discovery:
+Enable home assistant discovery with the following in settings.js
+```
+exports.topicPrefix = "homeassistant"
+exports.enableHassDiscovery = true;
+```
+
+Assumes the following MQTT configuration for Home Assistant (configuration.yaml)
+```
+broker: 127.0.0.1
+port: 1883
+keepalive: 60
+birth_message:
+  topic: "hass/status"
+  payload: "online"
+will_message:
+  topic: "hass/status"
+  payload: "offline"
+discovery: true
+discovery_prefix: homeassistant
+```
+
+Discovery messages are sent when cgateweb starts. When home assistant restarts entities become "unavailable". Sending the following topic will trigger discovery messages to be resent.
+- cbus/write/#1/#2//discovery
+
+### Useful automation
+```
+- id: poll_cbus_on_startup
+  alias: Poll c-gate for entities on startup
+  description: Polls c-gate service for list of entities and discovery messages, otherwise they all show up disabled
+  trigger:
+  - event: start
+    platform: homeassistant
+  condition: []
+  action:
+  - delay: '120'
+  - data:
+      topic: homeassistant/cbus/write/254/56//discovery
+    service: mqtt.publish
+  mode: single
+  ```
